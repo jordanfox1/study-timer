@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.6"
+        integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni"
+        crossorigin="anonymous"></script>
+    <title>Document</title>
+</head>
+
+<body class="container">
+
+    <div class="row mt-4 g-4">
+        <div class="col-8">
+            <h1 class="mb-4">Current Tasks</h1>
+
+            <ul class="list-group fs-5 me-5" id="task-list">
+                {{ range .tasks }}
+                {{ block "task-list-element" .}}
+                <li class="list-group-item bg-primary text-white">{{ .Title }} - {{ .Priority }}</li>
+                {{ end }}
+                {{ end }}
+            </ul>
+        </div>
+
+        <div class="col-4">
+            <h1 class="mb-4">Create New Task</h1>
+
+            <script defer>
+                htmx.defineExtension('my-ext', {
+                    onEvent: function (name) {
+                        if (name == "htmx:trigger") {
+                            try {                                
+                                console.log("attempting to save")
+                                taskTitle = document.getElementById("task-title").value
+                                taskPriority = document.getElementById("task-priority").value
+                                localStorage.setItem(taskTitle, taskPriority)
+                            } catch (error) {
+                                alert(error?.message)
+                                console.log(error)
+                            }
+                        }
+                    }
+                })
+            </script>
+
+            <form hx-post="/add-task/" hx-target="#task-list" hx-swap="beforeend" hx-indicator="#spinner">
+                <div class="mb-2">
+                    <label for="task-title">Name</label>
+                    <input type="text" name="title" id="task-title" class="form-control" />
+                    <label for="task-title">Priority</label>
+                    <input type="text" name="priority" id="task-priority" class="form-control" />
+                </div>
+
+
+                <button type="submit" class="btn btn-primary" hx-trigger="click" hx-ext="my-ext">
+                    <span class="spinner-border spinner-border-sm htmx-indicator" id="spinner" role="status"
+                        aria-hidden="true"></span>
+                    Save
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
